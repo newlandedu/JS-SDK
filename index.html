@@ -1,0 +1,187 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta http-equiv=Content-Type content="text/html;charset=utf-8">
+    <title>物联网云平台JS SDK</title>
+    <script src="jquery.min.js"></script>
+    <script src="nlecloud-sdk.min.js"></script>
+    <style>
+        .jumbotron { padding: 30px;margin-top: 130px; font-size: 21px; font-weight: 200; line-height: 2.1428571435; color: inherit; background-color: #eeeeee;}
+        .jumbotron h1{ text-align :center;}
+    </style>
+</head>
+<body>
+    <div class="jumbotron">
+        <h1>F12在控制台查看log！</h1>
+    </div>
+<script>
+
+    var api = new NLECloudAPI();
+
+    var account = "13800000011";        //测试帐号
+    var password = "123456";            //测试密码
+    var ProjectTag = "p97e1000479";     //测试的项目标识
+    var gatewayTag = "P97E1000479";     //测试的设备标识
+    var sensorApiTag = "76941BDCB657";  //测试的传感器ApiTag
+    var actuatorApiTag = "597A6D9232F8";//测试的执行器ApiTag
+    var cametaApiTag = "57EBD7293F65";  //测试的摄像头ApiTag
+
+    /**
+    * 用户登录（同时返回AccessToken）
+    * api.userLogin(帐号, 密码)
+    **/
+    api.userLogin(account, password).completed(function (data) {
+        console.log('用户登录（同时返回AccessToken），服务器返回：', data);
+        if (data.Status === 0) {
+
+            getOtherApi();
+
+        }
+    });
+
+
+    function getOtherApi()
+    {
+        /*
+        * 获取某个项目的信息
+        */
+        api.getProjectInfo(ProjectTag).completed(function (data) {
+            console.log("获取某个项目的信息，服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的信息
+        */
+        api.getGatewayInfo(gatewayTag).completed(function (data) {
+            console.log("获取某个网关的的信息，服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的传感器列表
+        */
+        api.getSensorList(gatewayTag).completed(function (data) {
+            console.log("获取某个设备的传感器列表,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个传感器的信息
+        */
+        api.getSensorInfo(gatewayTag, sensorApiTag).completed(function (data) {
+            console.log("获取某个传感器的信息,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的执行器列表
+        */
+        api.getActuatorList(gatewayTag).completed(function (data) {
+            console.log("获取某个设备的执行器列表,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个执行器的信息
+        */
+        api.getActuatorInfo(gatewayTag, actuatorApiTag).completed(function (data) {
+            console.log("获取某个执行器的信息,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的摄像头列表
+        */
+        api.getCameraList(gatewayTag).completed(function (data) {
+            console.log("获取某个设备的摄像头列表,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个摄像头的信息
+        */
+        api.getCameraInfo(gatewayTag, cametaApiTag).completed(function (data) {
+            console.log("获取某个摄像头的信息,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的当前在/离线状态
+        */
+        api.getGatewayOnOffLine(gatewayTag).completed(function (data) {
+            console.log("获取某个设备的当前在/离线状态 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的历史分页在/离线状态
+        */
+        api.getGatewayHistoryPagerOnOffLine(gatewayTag, '2017-01-01', "2018-01-01", 1, 10).completed(function (data) {
+            console.log("获取某个设备的历史分页在/离线状态 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的当前启/禁状态
+        */
+        api.getGatewayStatus(gatewayTag).completed(function (data) {
+            console.log("获取某个设备的当前启/禁状态 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个设备的所有传感器、执行器最新值
+        */
+        api.getGatewayNewestData(gatewayTag).completed(function (data) {
+            console.log("获取某个设备的所有传感器、执行器最新值 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个传感器的最新值
+        */
+        api.getSensorNewestData(gatewayTag, sensorApiTag).completed(function (data) {
+            console.log("获取某个传感器的最新值 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个传感器的历史数据
+        */
+        api.getSensorHistoryData(gatewayTag, sensorApiTag, 5, 3).completed(function (data) {
+            console.log("获取某个传感器的历史数据 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个传感器的历史分页数据
+        */
+        api.getSensorHistoryPagerData(gatewayTag, sensorApiTag, '2017-01-01', "2018-01-01", 1, 10).completed(function (data) {
+            console.log("获取某个传感器的历史分页数据,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个执行器的最新值
+        */
+        api.getActuatorNewestData(gatewayTag, actuatorApiTag).completed(function (data) {
+            console.log("获取某个执行器的最新值 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个执行器的历史数据
+        */
+        api.getActuatorHistoryData(gatewayTag, actuatorApiTag, 5, 3).completed(function (data) {
+            console.log("获取某个执行器的历史数据 ,服务器返回：", data);
+        });
+
+        /*
+        * 获取某个执行器的历史分页数据
+        */
+        api.getActuatorHistoryPagerData(gatewayTag, actuatorApiTag, '2017-01-01', "2018-01-01", 1, 10).completed(function (data) {
+            console.log("获取某个执行器的历史分页数据,服务器返回：", data);
+        });
+
+        /*
+        * 控制某个执行器
+        */
+        api.controlActuator(gatewayTag, actuatorApiTag, 1).completed(function (data) {
+            console.log("控制某个执行器,服务器返回：", data);
+        });
+    }
+
+    
+
+</script>
+</body>
+</html>
