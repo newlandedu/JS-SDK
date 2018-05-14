@@ -24,11 +24,12 @@
 
     var account = "13800000011";        //测试帐号
     var password = "123456";            //测试密码
-    var ProjectTag = "p97e1000479";     //测试的项目标识
-    var gatewayTag = "P97E1000479";     //测试的设备标识
-    var sensorApiTag = "76941BDCB657";  //测试的传感器ApiTag
-    var actuatorApiTag = "597A6D9232F8";//测试的执行器ApiTag
-    var cametaApiTag = "57EBD7293F65";  //测试的摄像头ApiTag
+    var projectID = "6547";     //测试的项目ID
+    var gatewayID = "6549";     //测试的设备ID
+    var gatewayTag = "rt34534534";     //测试的设备标识
+    var sensorApiTag = "sensor";  //测试的传感器ApiTag
+    var actuatorApiTag = "actuator";//测试的执行器ApiTag
+    var cametaApiTag = "gvludezqnzhq";  //测试的摄像头ApiTag
 
     /**
     * 用户登录（同时返回AccessToken）
@@ -49,135 +50,111 @@
         /*
         * 获取某个项目的信息
         */
-        api.getProjectInfo(ProjectTag).completed(function (data) {
+        api.getProjectInfo(projectID).completed(function (data) {
             console.log("获取某个项目的信息，服务器返回：", data);
         });
 
         /*
-        * 获取某个设备的信息
+        * 模糊查询项目
         */
-        api.getGatewayInfo(gatewayTag).completed(function (data) {
-            console.log("获取某个网关的的信息，服务器返回：", data);
+        api.getProjects({
+            Keyword: "",//关键字（可选，从id或name字段模糊匹配查询）  
+            ProjectTag: "", //项目标识码（可选，一个32位字符串）
+            NetWorkKind: null,//联网方案 （可选，1：WIFI 2：以太网 3:蜂窝网络 4:蓝牙）
+            StartDate: "2018-01-01 00:00:00", //起始时间（可选，包括当天，格式YYYY-MM-DD）
+            EndDate: "2018-12-31 00:00:00",//结束时间（可选，包括当天，格式YYYY-MM-DD）
+            PageIndex: 1,//指定页码
+            PageSize: 3//指定每页要显示的数据个数，默认20，最多100
+        }).completed(function (data) {
+            console.log("模糊查询项目，服务器返回：", data);
         });
 
         /*
-        * 获取某个设备的传感器列表
+        * 查询项目所有设备的传感器
         */
-        api.getSensorList(gatewayTag).completed(function (data) {
-            console.log("获取某个设备的传感器列表,服务器返回：", data);
+        api.getProjectSensors(projectID).completed(function (data) {
+            console.log("查询项目所有设备的传感器,服务器返回：", data);
         });
 
         /*
-        * 获取某个传感器的信息
+        * 批量查询设备最新数据
         */
-        api.getSensorInfo(gatewayTag, sensorApiTag).completed(function (data) {
-            console.log("获取某个传感器的信息,服务器返回：", data);
+        api.getDevicesDatas(gatewayID).completed(function (data) {
+            console.log("批量查询设备最新数据,服务器返回：", data);
         });
 
         /*
-        * 获取某个设备的执行器列表
+        * 批量查询设备的在线状态
         */
-        api.getActuatorList(gatewayTag).completed(function (data) {
-            console.log("获取某个设备的执行器列表,服务器返回：", data);
+        api.getDevicesStatus(gatewayID).completed(function (data) {
+            console.log("批量查询设备的在线状态,服务器返回：", data);
         });
 
         /*
-        * 获取某个执行器的信息
+        * 查询单个设备
         */
-        api.getActuatorInfo(gatewayTag, actuatorApiTag).completed(function (data) {
-            console.log("获取某个执行器的信息,服务器返回：", data);
+        api.getDeviceInfo(gatewayID).completed(function (data) {
+            console.log("查询单个设备,服务器返回：", data);
         });
 
         /*
-        * 获取某个设备的摄像头列表
+        * 模糊查询设备
         */
-        api.getCameraList(gatewayTag).completed(function (data) {
-            console.log("获取某个设备的摄像头列表,服务器返回：", data);
+        api.getDevices({
+            Keyword: "",//关键字（可选，从id或name字段左匹配）
+            DeviceIds: "",//指定设备ID（可选，如“124,34423,2345”，多个用逗号分隔，最多100个）
+            Tag: null,//设备标识（可选）
+            IsOnline: null,//在线状态（可选，true|false）
+            IsShare: null,//数据保密性（可选，true|false）
+            ProjectKeyWord: null,//项目ID或纯32位字符的项目标识码（可选）
+            StartDate: "2018-01-01 00:00:00", //起始时间（可选，包括当天，格式YYYY-MM-DD）  
+            EndDate: "2018-12-31 00:00:00", //结束时间（可选，包括当天，格式YYYY-MM-DD）
+            PageIndex: 1, //指定页码 Required
+            PageSize: 3//指定每页要显示的数据个数，默认20，最多100
+        }).completed(function (data) {
+            console.log("模糊查询设备,服务器返回：", data);
         });
 
         /*
-        * 获取某个摄像头的信息
+        * 查询单个传感器
         */
-        api.getCameraInfo(gatewayTag, cametaApiTag).completed(function (data) {
-            console.log("获取某个摄像头的信息,服务器返回：", data);
+        api.getSensorInfo(gatewayID, sensorApiTag).completed(function (data) {
+            console.log("查询单个传感器 ,服务器返回：", data);
         });
 
         /*
-        * 获取某个设备的当前在/离线状态
+        * 模糊查询传感器
         */
-        api.getGatewayOnOffLine(gatewayTag).completed(function (data) {
-            console.log("获取某个设备的当前在/离线状态 ,服务器返回：", data);
+        api.getSensors(gatewayID, sensorApiTag + "," + actuatorApiTag).completed(function (data) {
+            console.log("模糊查询传感器 ,服务器返回：", data);
+        });
+    
+        /*
+        * 查询传感数据
+        */
+        api.getSensorData({
+            DeviceId: gatewayID,//设备ID
+            ApiTags: sensorApiTag,//传感标识名（可选，多个用逗号分隔，最多50个）
+            Method:6,//查询方式（1：XX分钟内 2：XX小时内 3：XX天内 4：XX周内 5：XX月内 6：按startDate与endDate指定日期查询）
+            TimeAgo:null, //与Method配对使用表示"多少TimeAgo Method内"的数据，例：(Method=2,TimeAgo=30)表示30小时内的历史数据
+            Sort:'ASC',//时间排序方式，DESC:倒序，ASC升序
+            StartDate:"2018-01-01 00:00:00",//起始时间（可选，格式YYYY-MM-DD HH:mm:ss）
+            EndDate:"2018-12-31 00:00:00",//结束时间（可选，格式YYYY-MM-DD HH:mm:ss）
+            PageSize:3, //指定每次要请求的数据条数，默认1000，最多3000
+            PageIndex:1//指定页码
+
+        }).completed(function (data) {
+            console.log("查询传感数据 ,服务器返回：", data);
         });
 
         /*
-        * 获取某个设备的历史分页在/离线状态
+        * 发送命令/控制设备
         */
-        api.getGatewayHistoryPagerOnOffLine(gatewayTag, '2017-01-01', "2018-01-01", 1, 10).completed(function (data) {
-            console.log("获取某个设备的历史分页在/离线状态 ,服务器返回：", data);
+        api.Cmds(gatewayID, actuatorApiTag, 0).completed(function (data) {
+            console.log("发送命令/控制设备,服务器返回：", data);
         });
 
-        /*
-        * 获取某个设备的当前启/禁状态
-        */
-        api.getGatewayStatus(gatewayTag).completed(function (data) {
-            console.log("获取某个设备的当前启/禁状态 ,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个设备的所有传感器、执行器最新值
-        */
-        api.getGatewayNewestData(gatewayTag).completed(function (data) {
-            console.log("获取某个设备的所有传感器、执行器最新值 ,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个传感器的最新值
-        */
-        api.getSensorNewestData(gatewayTag, sensorApiTag).completed(function (data) {
-            console.log("获取某个传感器的最新值 ,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个传感器的历史数据
-        */
-        api.getSensorHistoryData(gatewayTag, sensorApiTag, 5, 3).completed(function (data) {
-            console.log("获取某个传感器的历史数据 ,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个传感器的历史分页数据
-        */
-        api.getSensorHistoryPagerData(gatewayTag, sensorApiTag, '2017-01-01', "2018-01-01", 1, 10).completed(function (data) {
-            console.log("获取某个传感器的历史分页数据,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个执行器的最新值
-        */
-        api.getActuatorNewestData(gatewayTag, actuatorApiTag).completed(function (data) {
-            console.log("获取某个执行器的最新值 ,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个执行器的历史数据
-        */
-        api.getActuatorHistoryData(gatewayTag, actuatorApiTag, 5, 3).completed(function (data) {
-            console.log("获取某个执行器的历史数据 ,服务器返回：", data);
-        });
-
-        /*
-        * 获取某个执行器的历史分页数据
-        */
-        api.getActuatorHistoryPagerData(gatewayTag, actuatorApiTag, '2017-01-01', "2018-01-01", 1, 10).completed(function (data) {
-            console.log("获取某个执行器的历史分页数据,服务器返回：", data);
-        });
-
-        /*
-        * 控制某个执行器
-        */
-        api.controlActuator(gatewayTag, actuatorApiTag, 1).completed(function (data) {
-            console.log("控制某个执行器,服务器返回：", data);
-        });
+      
     }
 
     

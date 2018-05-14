@@ -7,10 +7,10 @@
  */
 (function () {
 
-    var API_HOST = "http://api.nlecloud.com";
+    var API_HOST = "http://api.nlecloud.com"; 
     var AccessToken = '';
 
-    function jsonp(url, fn, token, data)
+    function jsonp(url, fn, token, data, type)
     {
         url += (url.indexOf('?') > 0 ? '&' : '?') + 't=' + (new Date()).getTime();
         if (token != null && token != undefined)
@@ -27,13 +27,16 @@
 
         data = data || {};
 
+        if (!type) type = "GET";
+
         $.ajax({
-            type: "GET",
             url: url,
+            type: type,
             data: data,
+            //crossDomain: true,
             dataType: "json",
-            success: function (data) {
-                fn(data);
+            success: function (result) {
+                fn(result);
             },
             error: function (data) {
                 console.log(data);
@@ -49,18 +52,25 @@
         * 用户登录（同时返回AccessToken）
         * @param account 用户
         * @param password 密码
+        * @param isRememberMe 记住密码
         */
-        userLogin: function (account, password) {
+        userLogin: function (account, password, isRememberMe) {
             var completedCallback;
-            jsonp(API_HOST + '/developer/jsonpresend?func=login&account=' + account + '&password=' + password, function (res) {
-
-                if (res.Status === 0) AccessToken = res.ResultObj.AccessToken;
-
-                completedCallback && completedCallback(res);
-            });
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
+            jsonp(
+                API_HOST + '/Jsonp/Login',
+                function (res) {
+                    if (res.Status === 0)
+                        AccessToken = res.ResultObj.AccessToken;
+                    completedCallback && completedCallback(res);
+                }, null,
+                {
+                    Account: account,
+                    Password: password,
+                    IsRememberMe: (isRememberMe ? true : false)
+                },"POST");
+                return {
+                    completed: function (fn) {
+                        completedCallback = fn;
                 }
             }
         },
@@ -68,9 +78,9 @@
         * 获取某个项目的信息
         * @param tag 项目标识
         */
-        getProjectInfo: function (tag) {
+        getProjectInfo: function (projectId) {
             var completedCallback;
-            jsonp(API_HOST + "/v2/project/" + tag, function (res) {
+            jsonp(API_HOST + "/Projects/" + projectId, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
             return {
@@ -80,12 +90,24 @@
             }
         },
         /*
-        * 获取某个设备的信息
-        * @param gatewaytag 设备标识
+        * 模糊查询项目
+        * @param query 查询条件
         */
-        getGatewayInfo: function (gatewayTag) {
+        getProjects: function (query) {
             var completedCallback;
-            jsonp(API_HOST + "/v2/gateway/" + gatewayTag , function (res) {
+            var queryStr = "";
+            if (query) {
+                queryStr += (query.Keyword ? ("Keyword=" + query.Keyword + "&") : "");
+                queryStr += (query.ProjectTag ? ("ProjectTag=" + query.ProjectTag + "&") : "");
+                queryStr += (query.NetWorkKind ? ("NetWorkKind=" + query.NetWorkKind + "&") : "");
+
+                queryStr += (query.StartDate ? ("StartDate=" + encodeURIComponent(query.StartDate) + "&") : "");
+                queryStr += (query.EndDate ? ("EndDate=" + encodeURIComponent(query.EndDate) + "&") : "");
+                queryStr += (query.PageSize ? ("PageSize=" + query.PageSize + "&") : "PageSize=20&");
+                queryStr += (query.PageIndex ? ("PageIndex=" + query.PageIndex + "&") : "PageIndex=1&");
+            }
+
+            jsonp(API_HOST + "/Projects?" + queryStr, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
             return {
@@ -95,12 +117,13 @@
             }
         },
         /*
-        * 获取某个设备的传感器列表
-        * @param gatewayTag 设备标识
+        * 查询项目所有设备的传感器
+        * @param projectId 项目ID
         */
-        getSensorList: function (gatewayTag) {
+        getProjectSensors: function (projectId) {
             var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/SensorList";
+            if (!projectId) throw "projectId 不能为空";
+            var url = API_HOST + "/Projects/" + projectId + "/Sensors";
             jsonp(url.format(gatewayTag), function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
@@ -111,13 +134,13 @@
             }
         },
         /*
-        * 获取某个传感器的信息
-        * @param gatewayTag 设备标识
-        * @param apiTag 传感器标识
+        * 批量查询设备最新数据
+        * @param devIds 设备ID用逗号隔开, 限制100个设备
         */
-        getSensorInfo: function (gatewayTag, apiTag) {
+        getDevicesDatas: function (devIds) {
             var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/sensor/{1}".format(gatewayTag, apiTag);
+            if (!devIds) devIds = "";
+            var url = API_HOST + "/Devices/Datas?devIds=" + devIds;
             jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
@@ -128,120 +151,13 @@
             }
         },
         /*
-        * 获取某个设备的执行器列表
-        * @param gatewayTag 设备标识
+        * 批量查询设备的在线状态
+        * @param devIds 设备ID用逗号隔开, 限制100个设备
         */
-        getActuatorList: function (gatewayTag) {
+        getDevicesStatus: function (devIds) {
             var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/actuatorlist".format(gatewayTag);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-
-        /*
-        * 获取某个执行器的信息
-        * @param gatewayTag 设备标识
-        * @param apiTag     执行器标识
-        */
-        getActuatorInfo: function (gatewayTag, apiTag) {
-            var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/actuator/{1}".format(gatewayTag, apiTag);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        * 获取某个设备的摄像头列表
-        * @param gatewayTag 设备标识
-        */
-        getCameraList: function (gatewayTag) {
-            var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/cameralist".format(gatewayTag);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        * 获取某个摄像头的信息
-        * @param gatewayTag 设备标识
-        * @param apiTag     执行器标识
-        */
-        getCameraInfo: function (gatewayTag, apiTag) {
-            var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/camera/{1}".format(gatewayTag, apiTag);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        * 获取某个设备的当前在/离线状态
-        * @param gatewayTag
-        */
-        getGatewayOnOffLine: function (gatewayTag) {
-            var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/onoffline".format(gatewayTag);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        * 获取某个设备的历史分页在/离线状态
-        * @param gatewayTag
-        * @param startDate
-        * @param endDate
-        * @param pageIndex
-        * @param pageSize
-        */
-        getGatewayHistoryPagerOnOffLine: function (gatewayTag, startDate, endDate, pageIndex, pageSize) {
-            var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/historypageronoffline".format(gatewayTag);
-            var data = {};
-            data.StartDate = startDate;
-            data.EndDate = endDate;
-            data.PageIndex = pageIndex;
-            data.PageSize = pageSize;
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, data);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-
-        /*
-        * 获取某个设备的当前启/禁状态
-        */
-        getGatewayStatus: function (gatewayTag) {
-            var completedCallback;
-            var url = API_HOST + "/v2/gateway/{0}/Status".format(gatewayTag);
+            if (!devIds) devIds = "";
+            var url = API_HOST + "/Devices/Status?devIds=" + devIds;
             jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
@@ -253,12 +169,122 @@
         },
 
         /*
-        * 获取某个设备的所有传感器、执行器最新值
-        * @param gatewayTag
+        * 查询单个设备
+        * @param deviceId 设备ID
         */
-        getGatewayNewestData: function (gatewayTag) {
+        getDeviceInfo: function (deviceId) {
             var completedCallback;
-            var url = API_HOST + "/v2/Gateway/{0}/NewestDatas".format(gatewayTag);
+            if (!deviceId) throw "deviceId 不能为空";
+            var url = API_HOST + "/Devices/" + deviceId;
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken);
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+        /*
+        * 模糊查询设备
+        * @param query 查询条件
+        */
+        getDevices: function (query) {
+            var completedCallback;
+            var queryStr = "";
+            if (query) {
+                queryStr += (query.Keyword ? ("Keyword=" + query.Keyword + "&") : "");
+                queryStr += (query.DeviceIds ? ("DeviceIds=" + query.DeviceIds + "&") : "");
+                queryStr += (query.Tag ? ("Tag=" + query.Tag + "&") : "");
+                queryStr += (query.IsOnline ? ("IsOnline=" + query.IsOnline + "&") : "");
+                queryStr += (query.IsShare ? ("IsShare=" + query.IsShare + "&") : "");
+                queryStr += (query.ProjectKeyWord ? ("ProjectKeyWord=" + query.ProjectKeyWord + "&") : "");
+
+                queryStr += (query.StartDate ? ("StartDate=" + encodeURIComponent(query.StartDate )+ "&") : "");
+                queryStr += (query.EndDate ? ("EndDate=" + encodeURIComponent(query.EndDate) + "&") : "");
+                queryStr += (query.PageSize ? ("PageSize=" + query.PageSize + "&") : "PageSize=20&");
+                queryStr += (query.PageIndex ? ("PageIndex=" + query.PageIndex + "&") : "PageIndex=1&");
+            }
+
+
+            var url = API_HOST + "/Devices?" + queryStr;
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken);
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+        /*
+        * 添加个新设备
+        * @param device 设备对象
+        */
+        addDevice: function (device) {
+            var completedCallback;
+            if (!device) throw "device 不能为空";
+            var url = API_HOST + "/Jsonp?func=addDevice";
+            jsonp(url, function (res) {
+                if (res && res.Status==0) {
+                    device.DeviceId = res.ResultObj;
+                }
+               
+                completedCallback && completedCallback(res);
+            }, AccessToken, device, "POST");
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+        /*
+        * 更新某个设备
+        * @param device 设备对象
+        */
+        updateDevice: function (device) {
+            var completedCallback;
+            if (!device) throw "device 不能为空";
+            if (!device.DeviceId) throw "DeviceId 不能为空";
+            var url = API_HOST + "/jsonp?func=updateDevice";
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken, device, "PUT");
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+        /*
+        * 删除某个设备
+        * @param deviceId 设备ID
+        */
+        deleteDevice: function (deviceId) {
+            var completedCallback;
+            if (!deviceId) throw "deviceId 不能为空";
+            var url = API_HOST + "/jsonp?func=deleteDevice&deviceId=" + deviceId;
+
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken, null,"DELETE");
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+
+        /*
+        * 查询单个传感器 
+        * @param deviceId  设备ID
+        * @param apiTag  传感标识名
+        */
+        getSensorInfo: function (deviceId, apiTag) {
+            var completedCallback;
+            if (!deviceId) throw "deviceId 不能为空";
+            if (!apiTag) throw "apiTag 不能为空";
+            var url = API_HOST + "/devices/" + deviceId + "/Sensors/" + apiTag;
             jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
@@ -270,13 +296,14 @@
         },
 
         /*
-        * 获取某个传感器的最新值
-        * @param gatewayTag
-        * @param sensorTag
+        * 模糊查询传感器
+        * @param deviceId  设备id
+        * @param apiTags  传感标识名，多个标识名之间用逗号分开（参数缺省时为查询所有）
         */
-        getSensorNewestData: function (gatewayTag, sensorTag) {
+        getSensors: function (deviceId, apiTags) {
             var completedCallback;
-            var url = API_HOST + "/v2/Gateway/{0}/Sensor/{1}/NewestData".format(gatewayTag, sensorTag);
+            if (!deviceId) throw "deviceId 不能为空";
+            var url = API_HOST + "/devices/" + deviceId + "/Sensors?apiTags=" + apiTags;
             jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
@@ -286,22 +313,38 @@
                 }
             }
         },
+
         /*
-        *获取某个传感器的历史数据
-        * @param gatewayTag
-        * @param sensorTag
-        * @param method  1，2，3，4，5对应分钟，小时，天，周，月
-        * @param timeAgo 前几
+        * 添加个新传感器
+        * @param sensor  要添加的传感器
         */
-        getSensorHistoryData: function (gatewayTag, sensorTag, method, timeAgo) {
+        addSensor: function (sensor) {
             var completedCallback;
-            var data = {};
-            data.Method = method;
-            data.TimeAgo = timeAgo;
-            var url = API_HOST + "/v2/Gateway/{0}/Sensor/{1}/HistoryData".format(gatewayTag, sensorTag);
+            if (!sensor) throw "sensor 不能为空";
+            if (!sensor.DeviceId) throw "DeviceId 不能为空";
+            var url = API_HOST + "/jsonp?func=addSensor";
             jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
-            }, AccessToken, data);
+            }, AccessToken, sensor, "POST");
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+        /*
+        *更新某个传感器
+        * @param sensor
+        */
+        updateSensor: function (sensor) {
+            var completedCallback;
+            if (!sensor) throw "sensor 不能为空";
+            if (!sensor.DeviceId) throw "DeviceId 不能为空";
+            if (!sensor.ApiTag) throw "ApiTag 不能为空";
+            var url = API_HOST + "/jsonp?func=updateSensor";
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken, data, "PUT");
             return {
                 completed: function (fn) {
                     completedCallback = fn;
@@ -310,25 +353,18 @@
         },
 
         /*
-         *获取某个传感器的历史分页数据
-         * @param gatewayTag
-         * @param sensorTag
-         * @param startDate
-         * @param endDate
-         * @param pageIndex
-         * @param pageSize
+         * 删除某个传感器
+         * @param deviceId 设备id
+         * @param apiTag   传感器标识
          */
-        getSensorHistoryPagerData: function (gatewayTag, sensorTag, startDate, endDate, pageIndex, pageSize) {
+        deleteSensor: function (deviceId, apiTag) {
             var completedCallback;
-            var url = API_HOST + "/v2/Gateway/{0}/Sensor/{1}/HistoryPagerData".format(gatewayTag, sensorTag);
-            var data = {};
-            data.StartDate = startDate;
-            data.EndDate = endDate;
-            data.PageIndex = pageIndex;
-            data.PageSize = pageSize;
+            if (!deviceId) throw "DeviceId 不能为空";
+            if (!apiTag) throw "ApiTag 不能为空";
+            var url = API_HOST + "/jsonp?func=deleteSensor&deviceId=" + deviceId + "&apiTag=" + apiTag;
             jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
-            }, AccessToken, data);
+            }, AccessToken, null, "DELETE");
             return {
                 completed: function (fn) {
                     completedCallback = fn;
@@ -337,91 +373,75 @@
         },
 
         /*
-        * 获取某个执行器的最新值
-        * @param gatewayTag
-        * @param actuatorApi
-        */
-        getActuatorNewestData: function (gatewayTag, actuatorApi) {
-            var completedCallback;
-            var url = API_HOST + "/v2/Gateway/{0}/actuator/{1}/NewestData".format(gatewayTag, actuatorApi);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        *获取某个执行器的历史数据
-        * @param gatewayTag
-        * @param actuatorApi
-        * @param method  1，2，3，4，5对应分钟，小时，天，周，月
-        * @param timeAgo 前几
-        */
-        getActuatorHistoryData: function (gatewayTag, actuatorApi, method, timeAgo) {
-            var completedCallback;
-            var data = {};
-            data.Method = method;
-            data.TimeAgo = timeAgo;
-            var url = API_HOST + "/v2/Gateway/{0}/actuator/{1}/HistoryData".format(gatewayTag, actuatorApi);
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, data);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-
-        /*
-        *获取某个执行器的历史分页数据
-        * @param gatewayTag
-        * @param actuatorApi
-        * @param startDate
-        * @param endDate
-        * @param pageIndex
-        * @param pageSize
-        */
-        getActuatorHistoryPagerData: function (gatewayTag, actuatorApi, startDate, endDate, pageIndex, pageSize) {
-            var completedCallback;
-            var url = API_HOST + "/v2/Gateway/{0}/actuator/{1}/HistoryPagerData".format(gatewayTag, actuatorApi);
-            var data = {};
-            data.StartDate = startDate;
-            data.EndDate = endDate;
-            data.PageIndex = pageIndex;
-            data.PageSize = pageSize;
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, data);
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-
-        /*
-        * 控制某个执行器
-        * @param gatewayTag
-        * @param actuatorApi
+        * 新增传感数据 
+        * @param deviceId 设备ID
         * @param data
         */
-        controlActuator: function (gatewayTag, actuatorApi, data) {
+        addSensorData: function (deviceId, data) {
             var completedCallback;
-            var url = API_HOST + '/developer/jsonpresend?func=control&gatewaytag=' + gatewayTag + '&apitag=' + actuatorApi + "&data=" + data;
+            if (!deviceId) throw "DeviceId 不能为空";
+            if (!data) throw "data 不能为空";
+            var url = API_HOST + "/jsonp?func=addSensorData&deviceId=" + deviceId;
             jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken, { DatasDTO: data}, "POST");
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+        /*
+        * 查询传感数据
+        * @param query 查询条件
+        */
+        getSensorData: function (query) {
+            var completedCallback;
+            if (!query) throw "query 不能为空";
+            if (!query.DeviceId) throw "DeviceId 不能为空";
+            var queryStr = "";
+            queryStr += (query.DeviceId ? ("DeviceId=" + query.DeviceId + "&") : "");
+            queryStr += (query.ApiTags ? ("ApiTags=" + query.ApiTags + "&") : "");
+            queryStr += (query.Method ? ("Method=" + query.Method + "&") : "");
+            queryStr += (query.TimeAgo ? ("TimeAgo=" + query.TimeAgo + "&") : "");
+            queryStr += (query.Sort ? ("Sort=" + query.Sort + "&") : "");
 
+            queryStr += (query.StartDate ? ("StartDate=" + encodeURIComponent(query.StartDate) + "&") : "");
+            queryStr += (query.EndDate ? ("EndDate=" + encodeURIComponent(query.EndDate) + "&") : "");
+            queryStr += (query.PageSize ? ("PageSize=" + query.PageSize + "&") : "PageSize=20&");
+            queryStr += (query.PageIndex ? ("PageIndex=" + query.PageIndex + "&") : "PageIndex=1&");
+            var url = API_HOST + "/devices/" + query.DeviceId + "/Datas?" + queryStr;
+            jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+
+        /*
+        *发送命令/控制设备
+        * @param deviceId 设备ID
+        * @param apiTag 传感标识名（可选）
+        * @param data 开关类：开=1，关=0，暂停=2
+                      家居类：调光灯亮度=0~254，RGB灯色度=2~239，窗帘、卷闸门、幕布打开百分比=3%~100%，红外指令=1(on)2(off)
+                      其它：integer/float/Json/String类型值
+        */
+        Cmds: function (deviceId, apiTag, data) {
+            var completedCallback;
+            var url = API_HOST + "/jsonp?func=Cmds&deviceId=" + deviceId + "&apiTag=" + apiTag;
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken, { data: data }, "POST");
             return {
                 completed: function (fn) {
                     completedCallback = fn;
                 }
             }
         }
+
     };
 
     window.NLECloudAPI = NLECloudAPI;
