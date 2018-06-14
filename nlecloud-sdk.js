@@ -124,7 +124,7 @@
             var completedCallback;
             if (!projectId) throw "projectId 不能为空";
             var url = API_HOST + "/Projects/" + projectId + "/Sensors";
-            jsonp(url.format(gatewayTag), function (res) {
+            jsonp(url, function (res) {
                 completedCallback && completedCallback(res);
             }, AccessToken);
             return {
@@ -217,63 +217,6 @@
                 }
             }
         },
-        /*
-        * 添加个新设备
-        * @param device 设备对象
-        */
-        addDevice: function (device) {
-            var completedCallback;
-            if (!device) throw "device 不能为空";
-            var url = API_HOST + "/Jsonp?func=addDevice";
-            jsonp(url, function (res) {
-                if (res && res.Status==0) {
-                    device.DeviceId = res.ResultObj;
-                }
-               
-                completedCallback && completedCallback(res);
-            }, AccessToken, device, "POST");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        * 更新某个设备
-        * @param device 设备对象
-        */
-        updateDevice: function (device) {
-            var completedCallback;
-            if (!device) throw "device 不能为空";
-            if (!device.DeviceId) throw "DeviceId 不能为空";
-            var url = API_HOST + "/jsonp?func=updateDevice";
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, device, "PUT");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        * 删除某个设备
-        * @param deviceId 设备ID
-        */
-        deleteDevice: function (deviceId) {
-            var completedCallback;
-            if (!deviceId) throw "deviceId 不能为空";
-            var url = API_HOST + "/jsonp?func=deleteDevice&deviceId=" + deviceId;
-
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, null,"DELETE");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
 
         /*
         * 查询单个传感器 
@@ -314,83 +257,7 @@
             }
         },
 
-        /*
-        * 添加个新传感器
-        * @param sensor  要添加的传感器
-        */
-        addSensor: function (sensor) {
-            var completedCallback;
-            if (!sensor) throw "sensor 不能为空";
-            if (!sensor.DeviceId) throw "DeviceId 不能为空";
-            var url = API_HOST + "/jsonp?func=addSensor";
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, sensor, "POST");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-        /*
-        *更新某个传感器
-        * @param sensor
-        */
-        updateSensor: function (sensor) {
-            var completedCallback;
-            if (!sensor) throw "sensor 不能为空";
-            if (!sensor.DeviceId) throw "DeviceId 不能为空";
-            if (!sensor.ApiTag) throw "ApiTag 不能为空";
-            var url = API_HOST + "/jsonp?func=updateSensor";
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, data, "PUT");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-
-        /*
-         * 删除某个传感器
-         * @param deviceId 设备id
-         * @param apiTag   传感器标识
-         */
-        deleteSensor: function (deviceId, apiTag) {
-            var completedCallback;
-            if (!deviceId) throw "DeviceId 不能为空";
-            if (!apiTag) throw "ApiTag 不能为空";
-            var url = API_HOST + "/jsonp?func=deleteSensor&deviceId=" + deviceId + "&apiTag=" + apiTag;
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, null, "DELETE");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
-
-        /*
-        * 新增传感数据 
-        * @param deviceId 设备ID
-        * @param data
-        */
-        addSensorData: function (deviceId, data) {
-            var completedCallback;
-            if (!deviceId) throw "DeviceId 不能为空";
-            if (!data) throw "data 不能为空";
-            var url = API_HOST + "/jsonp?func=addSensorData&deviceId=" + deviceId;
-            jsonp(url, function (res) {
-                completedCallback && completedCallback(res);
-            }, AccessToken, { DatasDTO: data}, "POST");
-            return {
-                completed: function (fn) {
-                    completedCallback = fn;
-                }
-            }
-        },
+        
         /*
         * 查询传感数据
         * @param query 查询条件

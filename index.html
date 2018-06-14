@@ -22,14 +22,13 @@
 
     var api = new NLECloudAPI();
 
-    var account = "13800000011";        //测试帐号
+    var account = "18965562233";        //测试帐号
     var password = "123456";            //测试密码
-    var projectID = "6547";     //测试的项目ID
-    var gatewayID = "6549";     //测试的设备ID
-    var gatewayTag = "rt34534534";     //测试的设备标识
-    var sensorApiTag = "sensor";  //测试的传感器ApiTag
-    var actuatorApiTag = "actuator";//测试的执行器ApiTag
-    var cametaApiTag = "gvludezqnzhq";  //测试的摄像头ApiTag
+    var projectID = "282";				//测试的项目ID
+    var deviceID = "282";				//测试的设备ID
+    var sensorApiTag = "m_temperature";	//测试的传感器ApiTag
+    var actuatorApiTag = "nl_fan";	//测试的执行器ApiTag
+    var cametaApiTag = "newcamera";  //测试的摄像头ApiTag
 
     /**
     * 用户登录（同时返回AccessToken）
@@ -58,13 +57,13 @@
         * 模糊查询项目
         */
         api.getProjects({
-            Keyword: "",//关键字（可选，从id或name字段模糊匹配查询）  
-            ProjectTag: "", //项目标识码（可选，一个32位字符串）
-            NetWorkKind: null,//联网方案 （可选，1：WIFI 2：以太网 3:蜂窝网络 4:蓝牙）
-            StartDate: "2018-01-01 00:00:00", //起始时间（可选，包括当天，格式YYYY-MM-DD）
-            EndDate: "2018-12-31 00:00:00",//结束时间（可选，包括当天，格式YYYY-MM-DD）
-            PageIndex: 1,//指定页码
-            PageSize: 3//指定每页要显示的数据个数，默认20，最多100
+            Keyword: "",				//关键字（可选，从id或name字段模糊匹配查询）  
+            ProjectTag: "",				//项目标识码（可选，一个32位字符串）
+            NetWorkKind: null,			//联网方案 （可选，1：WIFI 2：以太网 3:蜂窝网络 4:蓝牙）
+            StartDate: "2018-01-01 00:00:00",	//起始时间（可选，包括当天，格式YYYY-MM-DD）
+            EndDate: "2018-12-31 00:00:00",		//结束时间（可选，包括当天，格式YYYY-MM-DD）
+            PageIndex: 1,						//指定页码
+            PageSize: 3							//指定每页要显示的数据个数，默认20，最多100
         }).completed(function (data) {
             console.log("模糊查询项目，服务器返回：", data);
         });
@@ -79,21 +78,21 @@
         /*
         * 批量查询设备最新数据
         */
-        api.getDevicesDatas(gatewayID).completed(function (data) {
+        api.getDevicesDatas(deviceID).completed(function (data) {
             console.log("批量查询设备最新数据,服务器返回：", data);
         });
 
         /*
         * 批量查询设备的在线状态
         */
-        api.getDevicesStatus(gatewayID).completed(function (data) {
+        api.getDevicesStatus(deviceID).completed(function (data) {
             console.log("批量查询设备的在线状态,服务器返回：", data);
         });
 
         /*
         * 查询单个设备
         */
-        api.getDeviceInfo(gatewayID).completed(function (data) {
+        api.getDeviceInfo(deviceID).completed(function (data) {
             console.log("查询单个设备,服务器返回：", data);
         });
 
@@ -101,16 +100,16 @@
         * 模糊查询设备
         */
         api.getDevices({
-            Keyword: "",//关键字（可选，从id或name字段左匹配）
-            DeviceIds: "",//指定设备ID（可选，如“124,34423,2345”，多个用逗号分隔，最多100个）
-            Tag: null,//设备标识（可选）
-            IsOnline: null,//在线状态（可选，true|false）
-            IsShare: null,//数据保密性（可选，true|false）
-            ProjectKeyWord: null,//项目ID或纯32位字符的项目标识码（可选）
-            StartDate: "2018-01-01 00:00:00", //起始时间（可选，包括当天，格式YYYY-MM-DD）  
-            EndDate: "2018-12-31 00:00:00", //结束时间（可选，包括当天，格式YYYY-MM-DD）
-            PageIndex: 1, //指定页码 Required
-            PageSize: 3//指定每页要显示的数据个数，默认20，最多100
+            Keyword: "",				//关键字（可选，从id或name字段左匹配）
+            DeviceIds: "",				//指定设备ID（可选，如“124,34423,2345”，多个用逗号分隔，最多100个）
+            Tag: null,					//设备标识（可选）
+            IsOnline: null,				//在线状态（可选，true|false）
+            IsShare: null,				//数据保密性（可选，true|false）
+            ProjectKeyWord: null,		//项目ID或纯32位字符的项目标识码（可选）
+            StartDate: "2018-01-01 00:00:00",		//起始时间（可选，包括当天，格式YYYY-MM-DD）  
+            EndDate: "2018-12-31 00:00:00",			//结束时间（可选，包括当天，格式YYYY-MM-DD）
+            PageIndex: 1,							//指定页码 Required
+            PageSize: 3								//指定每页要显示的数据个数，默认20，最多100
         }).completed(function (data) {
             console.log("模糊查询设备,服务器返回：", data);
         });
@@ -118,14 +117,14 @@
         /*
         * 查询单个传感器
         */
-        api.getSensorInfo(gatewayID, sensorApiTag).completed(function (data) {
+        api.getSensorInfo(deviceID, sensorApiTag).completed(function (data) {
             console.log("查询单个传感器 ,服务器返回：", data);
         });
 
         /*
         * 模糊查询传感器
         */
-        api.getSensors(gatewayID, sensorApiTag + "," + actuatorApiTag).completed(function (data) {
+        api.getSensors(deviceID, sensorApiTag + "," + actuatorApiTag).completed(function (data) {
             console.log("模糊查询传感器 ,服务器返回：", data);
         });
     
@@ -133,15 +132,15 @@
         * 查询传感数据
         */
         api.getSensorData({
-            DeviceId: gatewayID,//设备ID
-            ApiTags: sensorApiTag,//传感标识名（可选，多个用逗号分隔，最多50个）
-            Method:6,//查询方式（1：XX分钟内 2：XX小时内 3：XX天内 4：XX周内 5：XX月内 6：按startDate与endDate指定日期查询）
-            TimeAgo:null, //与Method配对使用表示"多少TimeAgo Method内"的数据，例：(Method=2,TimeAgo=30)表示30小时内的历史数据
-            Sort:'ASC',//时间排序方式，DESC:倒序，ASC升序
-            StartDate:"2018-01-01 00:00:00",//起始时间（可选，格式YYYY-MM-DD HH:mm:ss）
-            EndDate:"2018-12-31 00:00:00",//结束时间（可选，格式YYYY-MM-DD HH:mm:ss）
-            PageSize:3, //指定每次要请求的数据条数，默认1000，最多3000
-            PageIndex:1//指定页码
+            DeviceId: deviceID,			//设备ID
+            ApiTags: sensorApiTag,		//传感标识名（可选，多个用逗号分隔，最多50个）
+            Method:6,					//查询方式（1：XX分钟内 2：XX小时内 3：XX天内 4：XX周内 5：XX月内 6：按startDate与endDate指定日期查询）
+            TimeAgo:null,				//与Method配对使用表示"多少TimeAgo Method内"的数据，例：(Method=2,TimeAgo=30)表示30小时内的历史数据
+            Sort:'ASC',					//时间排序方式，DESC:倒序，ASC升序
+            StartDate:"2018-01-01 00:00:00",	//起始时间（可选，格式YYYY-MM-DD HH:mm:ss）
+            EndDate:"2018-12-31 00:00:00",		//结束时间（可选，格式YYYY-MM-DD HH:mm:ss）
+            PageSize:3,							//指定每次要请求的数据条数，默认1000，最多3000
+            PageIndex:1							//指定页码
 
         }).completed(function (data) {
             console.log("查询传感数据 ,服务器返回：", data);
@@ -150,7 +149,7 @@
         /*
         * 发送命令/控制设备
         */
-        api.Cmds(gatewayID, actuatorApiTag, 0).completed(function (data) {
+        api.Cmds(deviceID, actuatorApiTag, 0).completed(function (data) {
             console.log("发送命令/控制设备,服务器返回：", data);
         });
 
