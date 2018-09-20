@@ -288,6 +288,34 @@
             }
         },
 
+
+		/*
+        * 聚合查询传感数据
+        * @param query 查询条件
+        */
+        groupingSensorData: function (query) {
+            var completedCallback;
+            if (!query) throw "query 不能为空";
+            if (!query.DeviceId) throw "DeviceId 不能为空";
+            var queryStr = "";
+            queryStr += (query.DeviceId ? ("DeviceId=" + query.DeviceId + "&") : "");
+            queryStr += (query.ApiTags ? ("ApiTags=" + query.ApiTags + "&") : "");
+            queryStr += (query.GroupBy ? ("GroupBy=" + query.GroupBy + "&") : "");
+            queryStr += (query.Func ? ("Func=" + query.Func + "&") : "");
+
+            queryStr += (query.StartDate ? ("StartDate=" + encodeURIComponent(query.StartDate) + "&") : "");
+            queryStr += (query.EndDate ? ("EndDate=" + encodeURIComponent(query.EndDate) + "&") : "");
+            var url = API_HOST + "/devices/" + query.DeviceId + "/Datas/Grouping?" + queryStr;
+            jsonp(url, function (res) {
+                completedCallback && completedCallback(res);
+            }, AccessToken);
+            return {
+                completed: function (fn) {
+                    completedCallback = fn;
+                }
+            }
+        },
+
         /*
         *发送命令/控制设备
         * @param deviceId 设备ID

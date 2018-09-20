@@ -24,9 +24,9 @@
 
     var account = "18965562233";        //测试帐号
     var password = "123456";            //测试密码
-    var projectID = "282";				//测试的项目ID
-    var deviceID = "282";				//测试的设备ID
-    var sensorApiTag = "m_temperature";	//测试的传感器ApiTag
+    var projectID = "10315";				//测试的项目ID
+    var deviceID = "10367";				//测试的设备ID
+    var sensorApiTag = "nl_temperature";	//测试的传感器ApiTag
     var actuatorApiTag = "nl_fan";	//测试的执行器ApiTag
     var cametaApiTag = "newcamera";  //测试的摄像头ApiTag
 
@@ -144,6 +144,21 @@
 
         }).completed(function (data) {
             console.log("查询传感数据 ,服务器返回：", data);
+        });
+
+		/*
+        * 聚合查询传感数据
+        */
+        api.groupingSensorData({
+            DeviceId: deviceID,		//设备ID
+            ApiTags: sensorApiTag,	//传感标识名（可选，多个用逗号分隔，最多50个）
+            GroupBy: 2,				//聚合方式（1：按分钟分组聚合 2：按小时分组聚合 3：按天分组聚合 4：按月分组聚合），默认2按小时聚合
+            Func:"MIN",				//聚合函数（与GroupBy配对使用，可以是MAX：按最大值聚合 MIN：按最小值聚合 COUNT：按统计条数聚合），默认MAX最大值聚合
+            StartDate:"2018-01-01 00:00:00",	//起始时间（可选，格式YYYY-MM-DD HH:mm:ss）
+            EndDate:"2018-12-31 00:00:00"		//结束时间（可选，格式YYYY-MM-DD HH:mm:ss）
+
+        }).completed(function (data) {
+            console.log("聚合查询传感数据 ,服务器返回：", data);
         });
 
         /*
